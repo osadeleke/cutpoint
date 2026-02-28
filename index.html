@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CutPoint URL Shortener</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #f7f7f7; }
+    h1 { color: #333; }
+    input, button { padding: 0.5rem; margin: 0.25rem 0; width: 100%; }
+    button { cursor: pointer; background: #4CAF50; color: white; border: none; }
+    button:hover { background: #45a049; }
+    .card { background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .url-item { margin-left: 1rem; }
+    pre { background: #eee; padding: 1rem; overflow-x: auto; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <h1>CutPoint URL Shortener</h1>
+
+  <div class="card">
+    <h2>Generate Shortened URL</h2>
+    <input type="text" id="url1" placeholder="Enter first URL" />
+    <input type="text" id="url2" placeholder="Enter second URL" />
+    <button id="generateBtn">Generate Short Code</button>
+
+    <div id="generatedResult"></div>
+  </div>
+
+  <div class="card">
+    <h2>Admin Dashboard</h2>
+    <input type="password" id="adminPass" placeholder="Enter admin password" />
+    <button id="adminBtn">View Cache</button>
+    <pre id="adminResult"></pre>
+  </div>
+
+  <script>
+    const generateBtn = document.getElementById("generateBtn");
+    const generatedResult = document.getElementById("generatedResult");
+
+    generateBtn.addEventListener("click", async () => {
+      const url1 = document.getElementById("url1").value.trim();
+      const url2 = document.getElementById("url2").value.trim();
+
+      if (!url1 || !url2) {
+        generatedResult.innerHTML = "<span style='color:red'>Both URLs are required!</span>";
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:3000/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url1, url2 })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          generatedResult.innerHTML = `<span style='color:red'>${data}</span>`;
+          return;
+        }
+
+        const { shortenedUrl, lengthOfNewUrl, urls } = data;
+        generatedResult.innerHTML = `
+          <p>Shortened URL: <a href="${shortenedUrl}" target="_blank">${shortenedUrl}</a> (Length: ${lengthOfNewUrl})</p>
+          <p>Original URLs:</p>
+          <ul>
+            ${urls.urls.map(u => `<li class="url-item">${u.link} - Hits: ${u.hits}, Percent decrease: ${u.percentDecrease}</li>`).join("")}
+          </ul>
+        `;
+      } catch (err) {
+        console.error(err);
+        generatedResult.innerHTML = "<span style='color:red'>Error generating short URL</span>";
+      }
+    });
+
+    const adminBtn = document.getElementById("adminBtn");
+    const adminResult = document.getElementById("adminResult");
+
+    adminBtn.addEventListener("click", async () => {
+      const password = document.getElementById("adminPass").value.trim();
+      if (!password) {
+        adminResult.textContent = "Please enter admin password";
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3000/admin/dashboard?password=${encodeURIComponent(password)}`);
+        if (!res.ok) {
+          const errMsg = await res.text();
+          adminResult.textContent = `Error: ${errMsg}`;
+          return;
+        }
+
+        const data = await res.json();
+        adminResult.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        console.error(err);
+        adminResult.textContent = "Error fetching admin dashboard";
+      }
+    });
+  </script>
+</body>
+</html>

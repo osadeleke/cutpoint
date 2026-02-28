@@ -1,10 +1,23 @@
 const express = require('express');
 const { nanoid, customAlphabet } = require('nanoid');
 const bcrypt = require('bcrypt');
+// const cors = require('cors');
+const path = require("path");
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+
+// app.use(cors({
+//     origin: '*'
+// }))
+
+app.use(express.static(path.join(__dirname, "frontend/build")));
+
+// Catch-all route to serve React's index.html for any frontend route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+});
 
 // Global in memory cache
 const cache = new Map();

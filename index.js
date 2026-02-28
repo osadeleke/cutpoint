@@ -14,20 +14,20 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "frontend/build")));
 
-// Catch-all route to serve React's index.html for any frontend route
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
-});
+// // Catch-all route to serve React's index.html for any frontend route
+// app.get("/*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+// });
 
 // Global in memory cache
 const cache = new Map();
 
 const hashedPassword = "$2a$12$r5eE.4WITW5u2HJcoAgdhudRWztGNS/bcGSDRFkT.vcSJ52U23mTy";
 
-app.get('/', (req, res) => {
-    res.send("Hello world!");
-    res.end();
-})
+// app.get('/', (req, res) => {
+//     res.send("Hello world!");
+//     res.end();
+// })
 
 
 app.post("/generate", (req, res) => {
@@ -125,7 +125,12 @@ app.get('/admin/dashboard', protectAdmin, (req, res) => {
     res.end();
 })
 
+app.get('/:path(*)', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
+
 app.listen(port, () => {
     console.log(`Server is listening on port ${port}...`)
 
 })
+

@@ -26,7 +26,7 @@ app.post("/generate", (req, res) => {
 
     if (url1.length < 1 || url2.length < 1) return res.status(400).send("URLs cannot be empty.");
 
-    const mainUrlID = customAlphabet("0123456789", 10);
+    const generateID = customAlphabet("0123456789", 10);
 
     let shortCode = nanoid(6);
 
@@ -40,18 +40,18 @@ app.post("/generate", (req, res) => {
         createdAt: new Date(),
         urls:  [
             {
-                id: mainUrlID(), 
-                link: req.body.url1, 
-                originalLength: req.body.url1.length,
+                id: generateID(), 
+                link: url1, 
+                originalLength: url1.length,
                 hits: 0,
-                percentDecrease: `${((req.body.url1.length - shortCode.length) / req.body.url1.length) * 100}%`
+                percentDecrease: `${Math.round(((url1.length - shortCode.length) / url1.length) * 100)}%`
             }, 
             {
-                id: mainUrlID(), 
-                link: req.body.url2, 
-                originalLength: req.body.url2.length,
+                id: generateID(), 
+                link: url2, 
+                originalLength: url2.length,
                 hits: 0,
-                percentDecrease: `${((req.body.url2.length - shortCode.length) / req.body.url2.length) * 100}%`
+                percentDecrease: `${Math.round(((url2.length - shortCode.length) / url2.length) * 100)}%`
             }
         ],
         get totalHits() {
@@ -61,14 +61,11 @@ app.post("/generate", (req, res) => {
     
     cache.set(shortCode, body);
 
-    res.send([
-        {
+    res.json({
             shortenedUrl: shortenedUrl,
             lengthOfNewUrl: shortenedUrl.length,
             urls: cache.get(shortCode)
-        }
-    ]);
-    res.end()
+        });
 });
 
 app.get('/:code', (req, res) => {
@@ -79,7 +76,7 @@ app.get('/:code', (req, res) => {
         return res.status(404).send("Not a valid short code");
     }
 
-    data = cache.get(code);
+    const data = cache.get(code);
 
     if (!data) return res.status(400).send("Not a valid short code");
 

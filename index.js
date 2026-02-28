@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend/build")));
 
 // Catch-all route to serve React's index.html for any frontend route
-app.get("*", (req, res) => {
+app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
 });
 
@@ -127,4 +127,5 @@ app.get('/admin/dashboard', protectAdmin, (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is listening on port ${port}...`)
+
 })
